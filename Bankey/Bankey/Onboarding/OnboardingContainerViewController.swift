@@ -7,14 +7,34 @@
 
 import UIKit
 
+protocol OnboardingContainerViewControllerDelegate: AnyObject {
+    func didFinishOnboarding()
+}
+
 class OnboardingContainerViewController: UIViewController {
+    
+    weak var delegate: OnboardingContainerViewControllerDelegate?
     
     let pageViewController: UIPageViewController
     var pages = [UIViewController]()
     var currentVC: UIViewController {
         didSet {
+//            if self.pages.firstIndex(of: self.currentVC) == 0 {
+//                self.leftPagingButton.isHidden = true
+//            } else {
+//                self.leftPagingButton.isHidden = false
+//            }
+//
+//            if self.pages.firstIndex(of: self.currentVC) == self.pages.count - 1 {
+//                self.rightPagingButtonTitle = "Done"
+//                // rightPagingButton을 다시 그려야 하는데...
+//            }
         }
     }
+    let closeButton = UIButton(type: .system)
+    let leftPagingButton = UIButton(type: .system)
+    let rightPagingButton = UIButton(type: .system)
+    var rightPagingButtonTitle = "Next"
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         
@@ -43,7 +63,13 @@ class OnboardingContainerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
+        self.setup()
+        self.style()
+        self.layout()
+    }
+    
+    private func setup() {
         self.view.backgroundColor = .systemPurple
         
         self.addChild(self.pageViewController)
@@ -65,9 +91,68 @@ class OnboardingContainerViewController: UIViewController {
             direction: .forward,
             animated: false,
             completion: nil
-        )
+        )        
         self.currentVC = self.pages.first!
     }
+    
+    private func style() {
+        self.closeButton.translatesAutoresizingMaskIntoConstraints = false
+        self.closeButton.setTitle("Close", for: [])
+        self.closeButton.addTarget(self, action: #selector(closeTapped), for: .primaryActionTriggered)
+        
+        self.leftPagingButton.translatesAutoresizingMaskIntoConstraints = false
+        self.leftPagingButton.setTitle("Back", for: [])
+        self.leftPagingButton.addTarget(self, action: #selector(leftPagingTapped), for: .primaryActionTriggered)
+        
+        self.rightPagingButton.translatesAutoresizingMaskIntoConstraints = false
+        self.rightPagingButton.setTitle(self.rightPagingButtonTitle, for: [])
+        self.rightPagingButton.addTarget(self, action: #selector(rightPagingTapped), for: .primaryActionTriggered)
+        
+        self.view.addSubview(closeButton)
+//        self.view.addSubview(leftPagingButton)
+//        self.view.addSubview(rightPagingButton)
+        
+    }
+    
+    private func layout() {
+        // Close button
+        NSLayoutConstraint.activate([
+            self.closeButton.leadingAnchor.constraint(
+                equalToSystemSpacingAfter: self.view.leadingAnchor,
+                multiplier: 2
+            ),
+            self.closeButton.topAnchor.constraint(
+                equalToSystemSpacingBelow: self.view.safeAreaLayoutGuide.topAnchor,
+                multiplier: 2
+            )
+        ])
+        
+//        // Left paging button
+//        NSLayoutConstraint.activate([
+//            self.leftPagingButton.leadingAnchor.constraint(
+//                equalToSystemSpacingAfter: self.view.leadingAnchor,
+//                multiplier: 2
+//            ),
+//            self.view.bottomAnchor.constraint(
+//                equalToSystemSpacingBelow: self.leftPagingButton.bottomAnchor,
+//                multiplier: 4
+//            )
+//        ])
+//
+//        // Right paging button
+//        NSLayoutConstraint.activate([
+//            self.view.trailingAnchor.constraint(
+//                equalToSystemSpacingAfter: self.rightPagingButton.trailingAnchor,
+//                multiplier: 2
+//            ),
+//            self.view.bottomAnchor.constraint(
+//                equalToSystemSpacingBelow: self.rightPagingButton.bottomAnchor,
+//                multiplier: 4
+//            )
+//        ])
+    }
+    
+    
 }
 
 // MARK: - UIPageViewControllerDataSource
@@ -99,5 +184,20 @@ extension OnboardingContainerViewController: UIPageViewControllerDataSource {
     
     func presentationIndex(for pageViewController: UIPageViewController) -> Int {
         return self.pages.firstIndex(of: self.currentVC) ?? 0
+    }
+}
+
+// MARK: - Actions
+extension OnboardingContainerViewController {
+    @objc func closeTapped(_ sender: UIButton) {
+        self.delegate?.didFinishOnboarding()
+    }
+    
+    @objc func leftPagingTapped(_ sender: UIButton) {
+        
+    }
+    
+    @objc func rightPagingTapped(_ sender: UIButton) {
+        
     }
 }
